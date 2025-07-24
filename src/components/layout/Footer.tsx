@@ -19,7 +19,7 @@ export default function Footer() {
               <a href="https://x.com/Atlantisxd" className="text-gray-400 hover:text-primary-400 transition-colors">
                 <Twitter className="w-5 h-5" />
               </a>
-              <a href="https://linkedin.com/suyash-padole" className="text-gray-400 hover:text-primary-400 transition-colors">
+              <a href="https://linkedin.com/in/suyash-padole" className="text-gray-400 hover:text-primary-400 transition-colors">
                 <Linkedin className="w-5 h-5" />
               </a>
               <a href="https://github.com/suyash-boop" className="text-gray-400 hover:text-primary-400 transition-colors">
@@ -88,15 +88,15 @@ export default function Footer() {
             <div className="space-y-2">
               <div className="flex items-center text-gray-300">
                 <Mail className="w-4 h-4 mr-2" />
-                <span>hello@formhire.com</span>
+                <span>suyashpadole715@gmail.com</span>
               </div>
               <div className="flex items-center text-gray-300">
                 <Phone className="w-4 h-4 mr-2" />
-                <span>+1 (555) 123-4567</span>
+                <span>+919623148523</span>
               </div>
               <div className="flex items-center text-gray-300">
                 <MapPin className="w-4 h-4 mr-2" />
-                <span>San Francisco, CA</span>
+                <span>Nagpur,</span>
               </div>
             </div>
           </div>
