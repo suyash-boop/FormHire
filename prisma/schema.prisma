@@ -1,0 +1,252 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  phone         String?
+  resume        String?   // URL to resume file
+  bio           String?   // User biography
+  location      String?
+  website       String?
+  linkedin      String?
+  github        String?
+  skills        String[]  // Array of skills
+  experience    String?   // Experience level (entry, mid, senior, etc.)
+  password      String?   // Add password field for email/password auth
+  
+  accounts      Account[]
+  sessions      Session[]
+  applications  Application[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verificationtokens")
+}
+
+// Admin model - single website owner/manager
+model Admin {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  image       String?
+  isActive    Boolean  @default(true)
+  
+  jobs        Job[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("admins")
+}
+
+// Job model - all jobs managed by admin
+model Job {
+  id              String   @id @default(cuid())
+  title           String
+  description     String   @db.Text
+  requirements    String   @db.Text
+  department      String
+  location        String
+  salary          String?
+  employmentType  String   @default("Full-time") // Full-time, Part-time, Contract, Freelance, Internship
+  experienceLevel String   @default("Mid-level") // Entry-level, Mid-level, Senior-level, Executive
+  skills          String[] // Required skills
+  benefits        String[] // Job benefits
+  resumeRequired  Boolean  @default(true)
+  isActive        Boolean  @default(true)
+  featured        Boolean  @default(false)
+  
+  // Company information (managed by admin)
+  companyName     String   @default("FormHire")
+  companyLogo     String?
+  companyWebsite  String?
+  companySize     String?
+  
+  adminId         String
+  admin           Admin    @relation(fields: [adminId], references: [id], onDelete: Cascade)
+  
+  applications    Application[]
+  questions       JobQuestion[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@map("jobs")
+}
+
+model Application {
+  id                     String   @id @default(cuid())
+  jobId                  String
+  userId                 String
+  
+  // Basic applicant info (for compatibility with existing code)
+  // Made these optional for migration compatibility
+  applicantName          String   // Remove the ? to make it required
+  applicantEmail         String   // Remove the ? to make it required
+  
+  // Detailed application fields
+  userEmail              String
+  userName               String
+  resumeUrl              String?
+  phoneNumber            String?
+  linkedinUrl            String?
+  portfolioUrl           String?
+  whyInterested          String?
+  relevantExperience     String?
+  expectedSalary         String?
+  availabilityStart      String?
+  currentEmployment      String?
+  relocationWillingness  String?
+  workAuthorization      String?
+  coverLetter            String?
+  additionalComments     String?
+  referenceSource        String?
+  
+  // Email notification fields
+  status                 String   @default("pending") // pending, reviewed, interview, hired, rejected
+  statusMessage          String?  // Optional message from admin
+  statusUpdatedAt        DateTime? // When status was last updated
+  
+  // Timestamps
+  appliedAt              DateTime @default(now())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  // Relations
+  user                   User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job                    Job               @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  answers                ApplicationAnswer[]
+
+  @@unique([jobId, userId])
+  @@map("applications")
+}
+
+// Application answers for custom job questions
+model ApplicationAnswer {
+  id            String      @id @default(cuid())
+  applicationId String
+  questionId    String
+  answer        String      @db.Text
+  
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  question      JobQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  createdAt     DateTime    @default(now())
+  
+  @@unique([applicationId, questionId])
+  @@map("application_answers")
+}
+
+model JobQuestion {
+  id          String   @id @default(cuid())
+  jobId       String
+  question    String   @db.Text
+  type        String   @default("TEXT") // TEXT, TEXTAREA, SELECT, RADIO, CHECKBOX, DATE, EMAIL, PHONE
+  required    Boolean  @default(true)
+  options     String[] @default([]) // For SELECT, RADIO, CHECKBOX types
+  placeholder String?
+  order       Int      @default(0)
+  
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  answers     ApplicationAnswer[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("job_questions")
+}
+
+// Keep existing tables to preserve data - made action optional for migration
+model ApplicationLog {
+  id           String   @id @default(cuid())
+  applicationId String
+  action       String   // Remove the ? to make it required
+  notes        String?  @db.Text
+  createdAt    DateTime @default(now())
+  
+  @@map("application_logs")
+}
+
+// Email notification tracking (optional - for tracking email delivery)
+model EmailLog {
+  id          String   @id @default(cuid())
+  to          String
+  subject     String
+  type        String   // welcome, application_confirmation, admin_notification, status_update
+  status      String   @default("pending") // pending, sent, failed
+  error       String?
+  messageId   String?
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+  
+  @@map("email_logs")
+}
+
+// Newsletter/notification subscriptions (for coming soon pages)
+model NotificationSubscription {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  type      String   // feature_launch, job_alerts, newsletter
+  isActive  Boolean  @default(true)
+  metadata  Json?    // Store additional data like preferences
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@map("notification_subscriptions")
+}
