@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
-import { sendWelcomeEmail } from '@/lib/email'
+
 
 export async function POST(request: NextRequest) {
   try {
@@ -57,10 +57,7 @@ export async function POST(request: NextRequest) {
     // Send welcome email
     try {
       
-      const emailResult = await sendWelcomeEmail(email, {
-        userName: name,
-        userEmail: email
-      })
+      
 
       if (emailResult.success) {
       } else {

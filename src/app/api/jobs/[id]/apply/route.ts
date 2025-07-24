@@ -2,11 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { 
-  sendApplicationConfirmation, 
-  sendAdminNewApplication, 
-  getAdminEmails 
-} from '@/lib/email'
+
 
 export async function POST(
   request: NextRequest,
@@ -87,32 +83,9 @@ export async function POST(
     })
 
     // Send confirmation email to applicant
-    try {
-      await sendApplicationConfirmation(session.user.email, {
-        applicantName: application.applicantName,
-        jobTitle: job.title,
-        companyName: job.companyName,
-        applicationId: application.id
-      })
-    } catch (emailError) {
-      console.error('Failed to send confirmation email:', emailError)
-      // Don't fail the application if email fails
-    }
-
+    
     // Send notification email to admins
-    try {
-      const adminEmails = getAdminEmails()
-      await sendAdminNewApplication(adminEmails, {
-        jobTitle: job.title,
-        applicantName: application.applicantName,
-        applicantEmail: application.applicantEmail,
-        applicationId: application.id,
-        resumeUrl: resumeUrl || undefined
-      })
-    } catch (emailError) {
-      console.error('Failed to send admin notification email:', emailError)
-      // Don't fail the application if email fails
-    }
+    
 
     return NextResponse.json({
       message: 'Application submitted successfully',

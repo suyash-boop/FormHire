@@ -32,11 +32,11 @@ export default function CreateJobPage() {
         setAdminData(data.admin)
         setIsLoading(false)
       } else {
-        router.push('/admin/signup')
+        router.push('/signin')
       }
     } catch (error) {
       console.error('Error checking admin access:', error)
-      router.push('/admin/signup')
+      router.push('/signin')
     }
   }
 

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import { sendApplicationStatusUpdate } from '@/lib/email'
+
 
 const ADMIN_EMAILS = [
   
@@ -73,20 +73,7 @@ export async function PUT(
     })
 
     // Send email notification to applicant if status changed
-    if (application.status !== status) {
-      try {
-        await sendApplicationStatusUpdate(application.applicantEmail, {
-          applicantName: application.applicantName,
-          jobTitle: application.job.title,
-          companyName: application.job.companyName,
-          status,
-          message
-        })
-      } catch (emailError) {
-        console.error('Failed to send status update email:', emailError)
-        // Don't fail the status update if email fails
-      }
-    }
+   
 
     return NextResponse.json({
       message: 'Application status updated successfully',

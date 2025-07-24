@@ -1,11 +1,11 @@
 'use client'
 
 import { signIn, getSession } from 'next-auth/react'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function SignIn() {
+function SignInContent() {
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -23,15 +23,10 @@ export default function SignIn() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      const result = await signIn('google', { 
+      await signIn('google', { 
         callbackUrl: callbackUrl,
-        redirect: true // Let NextAuth handle the redirect
+        redirect: true
       })
-      
-      if (result?.error) {
-        console.error('Sign in error:', result.error)
-        setIsLoading(false)
-      }
     } catch (error) {
       console.error('Sign in error:', error)
       setIsLoading(false)
@@ -42,7 +37,7 @@ export default function SignIn() {
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
         <div className="text-center">
-          <Link href="/" className="text-3xl font-bold text-primary-600">
+          <Link href="/" className="text-3xl font-bold text-blue-600">
             FormHire
           </Link>
           <h2 className="mt-6 text-3xl font-bold text-gray-900">
@@ -50,7 +45,7 @@ export default function SignIn() {
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             Or{' '}
-            <Link href="/" className="font-medium text-primary-600 hover:text-primary-500">
+            <Link href="/" className="font-medium text-blue-600 hover:text-blue-500">
               continue browsing jobs
             </Link>
           </p>
@@ -63,10 +58,10 @@ export default function SignIn() {
             <button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex justify-center items-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-primary-600 rounded-full animate-spin mr-3"></div>
+                <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin mr-3"></div>
               ) : (
                 <svg className="w-5 h-5 mr-3" viewBox="0 0 24 24">
                   <path
@@ -125,5 +120,17 @@ export default function SignIn() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function SignIn() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   )
 }
