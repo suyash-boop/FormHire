@@ -43,8 +43,11 @@ export async function POST(request: NextRequest) {
     
     if (!cloudName || !apiKey || !apiSecret) {
       console.log('❌ Cloudinary credentials not configured')
+      console.log('Cloud name:', cloudName)
       return NextResponse.json({ error: 'Cloudinary not configured' }, { status: 500 })
     }
+
+    console.log('🌤️ Using cloud name:', cloudName)
 
     // Create timestamp
     const timestamp = Math.round(Date.now() / 1000)
@@ -76,16 +79,14 @@ export async function POST(request: NextRequest) {
     cloudinaryFormData.append('folder', 'resumes')
     cloudinaryFormData.append('signature', signature)
 
-    console.log('☁️ Uploading to Cloudinary:', cloudName)
+    // Make sure we're using the correct cloud name in the URL
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`
+    console.log('☁️ Uploading to URL:', uploadUrl)
 
-    // Use /raw/upload endpoint for PDF files
-    const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
-      {
-        method: 'POST',
-        body: cloudinaryFormData,
-      }
-    )
+    const response = await fetch(uploadUrl, {
+      method: 'POST',
+      body: cloudinaryFormData,
+    })
 
     console.log('📡 Cloudinary response status:', response.status)
 
