@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,19 +31,52 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
     }
 
-    // Create new FormData for Cloudinary
-    const cloudinaryFormData = new FormData()
-    cloudinaryFormData.append('file', file)
-    cloudinaryFormData.append('upload_preset', 'resumes')
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      console.log('❌ File too large:', file.size)
+      return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 })
+    }
 
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
+    const apiKey = process.env.CLOUDINARY_API_KEY
+    const apiSecret = process.env.CLOUDINARY_API_SECRET
     
-    if (!cloudName) {
-      console.log('❌ Cloud name not configured')
+    if (!cloudName || !apiKey || !apiSecret) {
+      console.log('❌ Cloudinary credentials not configured')
       return NextResponse.json({ error: 'Cloudinary not configured' }, { status: 500 })
     }
 
-    console.log('☁️ Uploading to Cloudinary with preset "resumes":', cloudName)
+    // Create timestamp
+    const timestamp = Math.round(Date.now() / 1000)
+    
+    // Parameters for signature
+    const params = {
+      folder: 'resumes',
+      timestamp: timestamp
+    }
+
+    // Create signature
+    const sortedParams = Object.keys(params)
+      .sort()
+      .map(key => `${key}=${params[key as keyof typeof params]}`)
+      .join('&')
+
+    const signature = crypto
+      .createHash('sha1')
+      .update(sortedParams + apiSecret)
+      .digest('hex')
+
+    console.log('🔐 Signature created for signed upload')
+
+    // Create new FormData for Cloudinary
+    const cloudinaryFormData = new FormData()
+    cloudinaryFormData.append('file', file)
+    cloudinaryFormData.append('api_key', apiKey)
+    cloudinaryFormData.append('timestamp', timestamp.toString())
+    cloudinaryFormData.append('folder', 'resumes')
+    cloudinaryFormData.append('signature', signature)
+
+    console.log('☁️ Uploading to Cloudinary:', cloudName)
 
     // Use /raw/upload endpoint for PDF files
     const response = await fetch(

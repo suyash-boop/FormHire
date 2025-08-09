@@ -19,6 +19,7 @@
     "autoprefixer": "^10.0.1",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
+    "crypto": "^1.0.1",
     "eslint": "^8",
     "eslint-config-next": "14.2.30",
     "lucide-react": "^0.263.1",
