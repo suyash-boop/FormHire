@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     // Create new FormData for Cloudinary
     const cloudinaryFormData = new FormData()
     cloudinaryFormData.append('file', file)
-    cloudinaryFormData.append('upload_preset', 'resumes') // Use your preset name
-    cloudinaryFormData.append('folder', 'resumes')
+    cloudinaryFormData.append('upload_preset', 'resumes')
+    // Remove the folder - let the preset handle it
 
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
     
@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
 
     console.log('☁️ Uploading to Cloudinary with preset "resumes":', cloudName)
 
-    // Upload to Cloudinary using the regular upload endpoint (not /raw/upload)
+    // Use /raw/upload for PDF files
     const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
       {
         method: 'POST',
         body: cloudinaryFormData,
@@ -60,7 +60,6 @@ export async function POST(request: NextRequest) {
       const errorData = await response.text()
       console.error('❌ Cloudinary error response:', errorData)
       
-      // Try to parse the error for more details
       try {
         const errorJson = JSON.parse(errorData)
         console.error('❌ Cloudinary error details:', errorJson)
