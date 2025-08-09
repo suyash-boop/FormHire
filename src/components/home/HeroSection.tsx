@@ -134,16 +134,7 @@ export default function HeroSection() {
             </div>
           </form>
 
-          {/* Assignment Disclaimer */}
-          <div className="max-w-4xl mx-auto mb-6">
-            <div className="inline-flex items-center bg-blue-900/30 backdrop-blur-sm border border-blue-400/30 rounded-lg px-4 py-2 text-blue-100">
-              <Info className="w-4 h-4 mr-2 text-blue-300" />
-              <span className="text-sm">
-                📝 This website is created for assignment purposes for{' '}
-                <span className="font-semibold text-blue-200">Infugon Technologies</span>
-              </span>
-            </div>
-          </div>
+          
 
           {/* Admin Access Button - Only show if user is logged in but not admin */}
           {/* {session && session.user.role !== 'ADMIN' && (
