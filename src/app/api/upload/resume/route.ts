@@ -30,11 +30,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
     }
 
-    // Create new FormData for Cloudinary
+    // Create new FormData for Cloudinary - ONLY file and preset
     const cloudinaryFormData = new FormData()
     cloudinaryFormData.append('file', file)
     cloudinaryFormData.append('upload_preset', 'resumes')
-    cloudinaryFormData.append('resource_type', 'raw') // Add this for PDF files
+    // Remove resource_type - let preset handle it
 
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
     
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
 
     console.log('☁️ Uploading to Cloudinary with preset "resumes":', cloudName)
 
-    // Use regular /upload endpoint but specify resource_type as raw
+    // Use regular /upload endpoint
     const response = await fetch(
       `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
       {
