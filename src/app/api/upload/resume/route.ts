@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
     const cloudinaryFormData = new FormData()
     cloudinaryFormData.append('file', file)
     cloudinaryFormData.append('upload_preset', 'resumes')
-    // Remove the folder - let the preset handle it
+    cloudinaryFormData.append('resource_type', 'raw') // Add this for PDF files
 
     const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
     
@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
 
     console.log('☁️ Uploading to Cloudinary with preset "resumes":', cloudName)
 
-    // Use /raw/upload for PDF files
+    // Use regular /upload endpoint but specify resource_type as raw
     const response = await fetch(
-      `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+      `https://api.cloudinary.com/v1_1/${cloudName}/upload`,
       {
         method: 'POST',
         body: cloudinaryFormData,
