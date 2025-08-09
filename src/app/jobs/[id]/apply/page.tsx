@@ -183,10 +183,9 @@ export default function JobApplicationPage() {
     setIsUploadingResume(true)
     setErrors(prev => ({ ...prev, resume: '' }))
 
-    // Upload to Cloudinary
+    // Upload to Cloudinary without preset
     try {
       const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME
-      const uploadPreset = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || 'resumes'
 
       if (!cloudName) {
         console.error('Cloudinary cloud name not configured')
@@ -196,17 +195,15 @@ export default function JobApplicationPage() {
 
       const formData = new FormData()
       formData.append('file', file)
-      formData.append('upload_preset', uploadPreset)
+      // Use your API key and secret for unsigned uploads
       formData.append('folder', 'resumes')
       formData.append('resource_type', 'raw')
-
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      )
+      
+      // For unsigned uploads, we'll use a different approach
+      const response = await fetch('/api/upload/resume', {
+        method: 'POST',
+        body: formData,
+      })
 
       if (response.ok) {
         const data = await response.json()
@@ -214,21 +211,8 @@ export default function JobApplicationPage() {
         setErrors(prev => ({ ...prev, resume: '' }))
       } else {
         const errorData = await response.json()
-        console.error('Cloudinary upload failed:', errorData)
-        
-        let errorMessage = 'Failed to upload resume. Please try again.'
-        
-        if (errorData.error?.message) {
-          if (errorData.error.message.includes('Upload preset')) {
-            errorMessage = 'Upload configuration error. Please contact support.'
-          } else if (errorData.error.message.includes('File size')) {
-            errorMessage = 'File size too large. Please use a file under 5MB.'
-          } else if (errorData.error.message.includes('Invalid file type')) {
-            errorMessage = 'Invalid file type. Please upload a PDF or Word document.'
-          }
-        }
-        
-        setErrors(prev => ({ ...prev, resume: errorMessage }))
+        console.error('Upload failed:', errorData)
+        setErrors(prev => ({ ...prev, resume: errorData.error || 'Failed to upload resume. Please try again.' }))
       }
     } catch (error) {
       console.error('Error uploading resume:', error)
